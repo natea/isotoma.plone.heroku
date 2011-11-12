@@ -19,6 +19,13 @@
 
 import os, sys, optparse, urlparse
 
+if 'VCAP_SERVICES' in os.environ:
+    import json
+    vcap_services = json.loads(os.environ['VCAP_SERVICES'])
+    # XXX: avoid hardcoding here
+    srv = vcap_services['postgresql-8.4'][0]
+#    srv = vcap_services['mysql-5.1'][0]
+    cred = srv['credentials']
 
 # Zope configuration to poke variables into when web process is started
 rel_storage = """
@@ -67,15 +74,7 @@ class Instance(object):
             self.rootdir = rootdir
         else:
             self.rootdir = os.getcwd()
-
-        if port:
-            self.port = port
-        else:
-            self.port = os.environ.get("PORT", "8080")
-
-        if not database_url:
-            database_url = os.environ.get("DATABASE_URL", None)
-
+        
         # Figure out directory structure based on where this script is
         self.instance_home = os.path.join(self.rootdir, "zope")
         self.conf_file = os.path.join(self.instance_home, "etc", "zope.conf")
@@ -86,14 +85,15 @@ class Instance(object):
             os.system("%(root_dir)s/bin/mkzopeinstance -u admin:admin -d %(instance_home)s" % dict(root_dir=self.rootdir, instance_home=self.instance_home))
 
         # Generate a zope conf for '/' - either RelStorage or temporarystorage
-        if database_url:
-            db = urlparse.urlparse(database_url)
+        if db_name:
+
+            port = cred['port']
 
             storage = rel_storage % dict(
-                db_username=db.username,
-                db_password=db.password,
-                db_host=db.hostname,
-                db_name=db.path[1:],
+                db_username = cred['user'],
+                db_password = cred['password'],
+                db_host = cred['hostname'],
+                db_name = cred['name'],
                 )
 
         else:
