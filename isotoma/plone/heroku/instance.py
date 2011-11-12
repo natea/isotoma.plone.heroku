@@ -97,10 +97,16 @@ class Instance(object):
         else:
             storage = temp_storage
 
-        # Rewrite zope.conf according to the port we are supposd to listen on and storage backend
+        # Rewrite zope.conf according to the port we are supposed to listen on and storage backend
+        
+        if 'VMC_APP_PORT' in os.environ:
+            port = int(os.getenv('VMC_APP_PORT', '8000'))
+        else:
+            port = self.port
+            
         open(self.conf_file, "w").write(zope_conf % dict(
             instance_home=self.instance_home,
-            port=self.port,
+            port=port,
             storage=storage,
             ))
 
