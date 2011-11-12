@@ -19,14 +19,6 @@
 
 import os, sys, optparse, urlparse
 
-if 'VCAP_SERVICES' in os.environ:
-    import json
-    vcap_services = json.loads(os.environ['VCAP_SERVICES'])
-    # XXX: avoid hardcoding here
-    srv = vcap_services['postgresql-8.4'][0]
-#    srv = vcap_services['mysql-5.1'][0]
-    cred = srv['credentials']
-
 # Zope configuration to poke variables into when web process is started
 rel_storage = """
     <relstorage>
@@ -85,7 +77,13 @@ class Instance(object):
             os.system("%(root_dir)s/bin/mkzopeinstance -u admin:admin -d %(instance_home)s" % dict(root_dir=self.rootdir, instance_home=self.instance_home))
 
         # Generate a zope conf for '/' - either RelStorage or temporarystorage
-        if db_name:
+        if 'VCAP_SERVICES' in os.environ:
+            import json
+            vcap_services = json.loads(os.environ['VCAP_SERVICES'])
+            # XXX: avoid hardcoding here
+            srv = vcap_services['postgresql-8.4'][0]
+        #    srv = vcap_services['mysql-5.1'][0]
+            cred = srv['credentials']
 
             port = cred['port']
 
