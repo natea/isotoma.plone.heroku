@@ -66,7 +66,12 @@ class Instance(object):
             self.rootdir = rootdir
         else:
             self.rootdir = os.getcwd()
-            
+         
+        if port:
+            self.port = port
+        else:
+            self.port = int(os.getenv('VMC_APP_PORT', '8000'))
+               
         # Figure out directory structure based on where this script is
         self.instance_home = os.path.join(self.rootdir, "zope")
         self.conf_file = os.path.join(self.instance_home, "etc", "zope.conf")
@@ -102,7 +107,7 @@ class Instance(object):
             
         open(self.conf_file, "w").write(zope_conf % dict(
             instance_home=self.instance_home,
-            port=8080,
+            port=self.port,
             storage=storage,
             ))
 
