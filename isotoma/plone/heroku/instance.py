@@ -66,47 +66,43 @@ class Instance(object):
             self.rootdir = rootdir
         else:
             self.rootdir = os.getcwd()
-        
+            
         # Figure out directory structure based on where this script is
         self.instance_home = os.path.join(self.rootdir, "zope")
         self.conf_file = os.path.join(self.instance_home, "etc", "zope.conf")
-        self.zdctl = os.path.join(self.rootdir, "bin", "zopectl")
+        self.python_dir = os.path.join(self.rootdir, "..", "python")
+        self.zdctl = os.path.join(self.python_dir, "bin", "zopectl")
 
         # If there is no zope instance, create one
         if not os.path.exists(self.conf_file):
-            os.system("%(root_dir)s/bin/mkzopeinstance -u admin:admin -d %(instance_home)s" % dict(root_dir=self.rootdir, instance_home=self.instance_home))
+            os.system("%(python_dir)s/bin/mkzopeinstance -u admin:admin -d %(instance_home)s" % dict(python_dir=self.python_dir, instance_home=self.instance_home))
 
         # Generate a zope conf for '/' - either RelStorage or temporarystorage
-        if 'VCAP_SERVICES' in os.environ:
-            import json
-            vcap_services = json.loads(os.environ['VCAP_SERVICES'])
-            # XXX: avoid hardcoding here
-            srv = vcap_services['postgresql-8.4'][0]
-        #    srv = vcap_services['mysql-5.1'][0]
-            cred = srv['credentials']
-
-            port = cred['port']
-
-            storage = rel_storage % dict(
-                db_username = cred['user'],
-                db_password = cred['password'],
-                db_host = cred['hostname'],
-                db_name = cred['name'],
-                )
-
-        else:
-            storage = temp_storage
+        # if 'VCAP_SERVICES' in os.environ:
+        #     import json
+        #     vcap_services = json.loads(os.environ['VCAP_SERVICES'])
+        #     # XXX: avoid hardcoding here
+        #     srv = vcap_services['postgresql-8.4'][0]
+        # #    srv = vcap_services['mysql-5.1'][0]
+        #     cred = srv['credentials']
+        # 
+        #     port = cred['port']
+        # 
+        #     storage = rel_storage % dict(
+        #         db_username = cred['user'],
+        #         db_password = cred['password'],
+        #         db_host = cred['hostname'],
+        #         db_name = cred['name'],
+        #         )
+        # 
+        # else:
+        storage = temp_storage
 
         # Rewrite zope.conf according to the port we are supposed to listen on and storage backend
-        
-        if 'VMC_APP_PORT' in os.environ:
-            port = int(os.getenv('VMC_APP_PORT', '8000'))
-        else:
-            port = self.port
             
         open(self.conf_file, "w").write(zope_conf % dict(
             instance_home=self.instance_home,
-            port=port,
+            port=8080,
             storage=storage,
             ))
 
