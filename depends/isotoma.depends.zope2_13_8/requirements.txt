@@ -71,7 +71,7 @@ zope.broken==3.6.0
 zope.filerepresentation==3.6.0
 zope.dottedname==3.4.6
 manuel==1.1.1
-Zope2==2.13.10
+Zope2==2.13.8
 psycopg2==2.4.2
 RelStorage==1.4.2
 
